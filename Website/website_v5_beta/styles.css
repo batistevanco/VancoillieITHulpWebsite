@@ -194,6 +194,7 @@
   padding: 100px 10%;
   overflow: hidden;
   position: relative;
+  background-color: rgb(230, 230, 230);
 }
 
 .text-content {
