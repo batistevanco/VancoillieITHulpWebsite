@@ -1,0 +1,140 @@
+{
+  "month": "2025-09",
+  "income": [
+    {
+      "id": "4mjjb0o",
+      "label": "Netto maandloon",
+      "amount": 2000,
+      "recurring": true
+    },
+    {
+      "id": "l2qjcxb",
+      "label": "Bijberoep",
+      "amount": 100,
+      "recurring": true
+    },
+    {
+      "id": "f6ctec2",
+      "label": "Maaltijdcheques",
+      "amount": 150,
+      "recurring": true
+    }
+  ],
+  "expenses": [
+    {
+      "id": "i4km20o",
+      "category": "Woning • Hypotheek/Huur",
+      "label": "Hypotheek",
+      "amount": 900,
+      "frequency": "monthly",
+      "dueDay": 1,
+      "carry": true
+    },
+    {
+      "id": "5zlma7c",
+      "category": "Woning • Nutsvoorzieningen",
+      "label": "Elektriciteit/Gas",
+      "amount": 175,
+      "frequency": "monthly",
+      "dueDay": 10,
+      "carry": true
+    },
+    {
+      "id": "bh9q32p",
+      "category": "Woning • Nutsvoorzieningen",
+      "label": "Water",
+      "amount": 75,
+      "frequency": "quarterly",
+      "dueDay": 15,
+      "carry": true
+    },
+    {
+      "id": "719yrv8",
+      "category": "Syndic kosten",
+      "label": "Syndic kosten",
+      "amount": 1000,
+      "frequency": "yearly",
+      "dueDay": 1,
+      "carry": true
+    },
+    {
+      "id": "dzbzvq1",
+      "category": "Kadastraal inkomen",
+      "label": "Kadalstraal inkomen",
+      "amount": 1000,
+      "frequency": "yearly",
+      "dueDay": 1,
+      "carry": true
+    },
+    {
+      "id": "xon0p5e",
+      "category": "Verzekeringen",
+      "label": "Woning",
+      "amount": 300,
+      "frequency": "yearly",
+      "dueDay": 1,
+      "carry": true
+    },
+    {
+      "id": "ubvbhlb",
+      "category": "Verzekeringen",
+      "label": "Ziekteverzekering",
+      "amount": 120,
+      "frequency": "yearly",
+      "dueDay": 1,
+      "carry": true
+    },
+    {
+      "id": "jmknyjt",
+      "category": "Verzekeringen",
+      "label": "Schuldsaldo",
+      "amount": 30,
+      "frequency": "monthly",
+      "dueDay": 1,
+      "carry": true
+    },
+    {
+      "id": "9wpyg6x",
+      "category": "Boodschappen",
+      "label": "Supermarkt (betaald met maaltijdcheques)",
+      "amount": 200,
+      "frequency": "monthly",
+      "dueDay": 1,
+      "carry": true
+    },
+    {
+      "id": "misgn39",
+      "category": "Internet",
+      "label": "Orange internet",
+      "amount": 60,
+      "frequency": "monthly",
+      "dueDay": 1,
+      "carry": true
+    },
+    {
+      "id": "2xcxzvm",
+      "category": "Abonnementen",
+      "label": "Netflix",
+      "amount": 10,
+      "frequency": "monthly",
+      "dueDay": 1,
+      "carry": true
+    }
+  ],
+  "savings": [
+    {
+      "id": "7cg63zh",
+      "label": "Spaarrekening",
+      "amount": 300,
+      "recurring": true,
+      "kind": "sparen"
+    },
+    {
+      "id": "d5661sv",
+      "label": "Belegging bolero",
+      "amount": 150,
+      "recurring": true,
+      "kind": "beleggen"
+    }
+  ]
+}

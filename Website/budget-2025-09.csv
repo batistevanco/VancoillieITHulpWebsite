@@ -1,0 +1,17 @@
+Type,Categorie,Omschrijving,Bedrag,Frequentie,Vervaldag,Maand,Maandbedrag
+Inkomst,,Netto maandloon,2000,recurring,,2025-09,2000
+Inkomst,,Bijberoep,100,recurring,,2025-09,100
+Inkomst,,Maaltijdcheques,150,recurring,,2025-09,150
+Uitgave,Woning • Hypotheek/Huur,Hypotheek,900,monthly,1,2025-09,900
+Uitgave,Woning • Nutsvoorzieningen,Elektriciteit/Gas,175,monthly,10,2025-09,175
+Uitgave,Woning • Nutsvoorzieningen,Water,75,quarterly,15,2025-09,25
+Uitgave,Syndic kosten,Syndic kosten,1000,yearly,1,2025-09,83.33333333333333
+Uitgave,Kadastraal inkomen,Kadalstraal inkomen,1000,yearly,1,2025-09,83.33333333333333
+Uitgave,Verzekeringen,Woning,300,yearly,1,2025-09,25
+Uitgave,Verzekeringen,Ziekteverzekering,120,yearly,1,2025-09,10
+Uitgave,Verzekeringen,Schuldsaldo,30,monthly,1,2025-09,30
+Uitgave,Boodschappen,Supermarkt (betaald met maaltijdcheques),200,monthly,1,2025-09,200
+Uitgave,Internet,Orange internet,60,monthly,1,2025-09,60
+Uitgave,Abonnementen,Netflix,10,monthly,1,2025-09,10
+Besparing,sparen,Spaarrekening,300,recurring,,2025-09,300
+Besparing,beleggen,Belegging bolero,150,recurring,,2025-09,150
