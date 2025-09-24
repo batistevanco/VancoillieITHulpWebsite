@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Vancoillie IT Hulp – Calculator</title>
+  <style>
+    :root{
+      --bg:#f8fafc;          /* achtergrond */
+      --card:#ffffff;        /* kaarten */
+      --ink:#0f172a;         /* tekst donker */
+      --muted:#475569;       /* secundaire tekst */
+      --primary:#2563eb;     /* knoppen blauw */
+      --primary-pressed:#1d4ed8;
+      --danger:#ef4444;      /* stop knop */
+      --danger-pressed:#dc2626;
+      --ring:#93c5fd;        /* focus ring */
+      --outline:#e2e8f0;     /* borders */
+      --pill:#eef2ff;
+      --radius:18px;
+    }
+
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; font-family: -apple-system, system-ui, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      background:var(--bg); color:var(--ink);
+      display:flex; justify-content:center; padding:20px;
+    }
+
+    .app{ width:min(720px, 100%); }
+
+    header{ text-align:center; margin:10px 0 16px; }
+    header h1{ margin:0; font-size:28px; letter-spacing:.3px; }
+    header .accent{ color:var(--primary); font-weight:800; }
+
+    .card{
+      background:var(--card);
+      border:2px solid #0b0e14; /* subtiele "device" vibe */
+      border-radius:26px;
+      padding:22px; margin:18px 12px;
+      box-shadow:0 8px 30px rgba(2,8,23,.06);
+    }
+
+    .group-title{ font-weight:800; font-size:20px; margin:2px 2px 12px; }
+
+    label{ display:block; font-weight:800; margin:14px 6px 6px; }
+    .row{ display:flex; gap:12px; align-items:center; }
+
+    input[type="number"], input[type="text"], .pill{
+      width:100%;
+      padding:16px 18px; border-radius:20px; border:2px solid var(--outline);
+      background:#fff; font-size:18px; outline:none;
+      transition:border-color .2s, box-shadow .2s;
+    }
+    input:focus{ border-color:var(--ring); box-shadow:0 0 0 4px rgba(147,197,253,.35); }
+
+    .inline{ width:140px; }
+
+    .checkbox-row{ display:flex; align-items:center; gap:10px; padding:8px 4px 0; color:var(--muted); font-weight:700; }
+
+    .pill{ background:#f1f5f9; font-weight:800; }
+
+    .footer{ text-align:center; margin-top:10px; }
+    .grid-2{ display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+
+    button{
+      appearance:none; border:none; cursor:pointer; font-weight:900; font-size:18px; letter-spacing:.3px;
+      padding:16px 22px; border-radius:20px; color:#fff; display:inline-flex; align-items:center; justify-content:center;
+      box-shadow:0 8px 0 rgba(0,0,0,.15); transform:translateY(0); transition:transform .05s ease, box-shadow .05s ease, opacity .2s;
+    }
+    button:active{ transform:translateY(4px); box-shadow:0 4px 0 rgba(0,0,0,.15); }
+
+    .btn-start{ background:var(--primary); }
+    .btn-start:active{ background:var(--primary-pressed); }
+    .btn-stop{ background:var(--danger); }
+    .btn-stop:active{ background:var(--danger-pressed); }
+    .btn-disabled{ opacity:.45; pointer-events:none; }
+
+    .totals{ font-size:18px; }
+    .totals .value{ font-weight:900; font-size:22px; }
+    .breakdown{ margin-top:10px; color:var(--muted); font-weight:700; }
+
+    .times{ text-align:center; font-weight:900; font-size:22px; line-height:1.6; gap: 16px; display: flex; flex-direction: column; align-items: center; }
+
+    .time-val{ font-weight:800; display:inline-block; min-width:180px; background:var(--pill); padding:8px 12px; border-radius:14px; }
+
+    .notice{ text-align:center; color:var(--muted); font-size:14px; margin-top:4px; }
+  </style>
+
+  <!-- Favicon -->    
+     <link rel="icon" sizes="32x32" href="favicon-32x32.png">
+     <link rel="icon" sizes="48x48" href="favicon-48x48.png">
+     <link rel="icon" sizes="96x96" href="favicon-96x96.png">
+     <link rel="icon" sizes="192x192" href="Favicon-192x192.png">
+     <link rel="apple-touch-icon" sizes="180x180" href="favicon-180x180.png">
+     <link rel="shortcut icon" type="image/x-icon" href="favicon-48x48.ico">
+
+</head>
+<body>
+  <main class="app" id="app">
+    <header>
+      <h1>Vancoillie <span class="accent">IT</span> Hulp</h1>
+    </header>
+
+    <section class="card">
+      <div class="group-title">Uurtarief &amp; Vervoer</div>
+      <label for="rateHour">Uurtarief (€)</label>
+      <input id="rateHour" type="number" min="0" step="0.01" inputmode="decimal" placeholder="bv. 45" />
+
+      <label for="rateTravel">Vervoertarief per km (€)</label>
+      <input id="rateTravel" type="number" min="0" step="0.01" inputmode="decimal" placeholder="bv. 0.35" />
+
+      <div class="checkbox-row">
+        <input id="stdCost" type="checkbox" />
+        <label for="stdCost" style="margin:0; font-weight:800; cursor:pointer">Standaardkost van €5 toepassen</label>
+      </div>
+      <div class="notice">Uurtarief &amp; vervoertarief worden automatisch bewaard in je browser (localStorage).</div>
+    </section>
+
+    <section class="card">
+      <div class="group-title">Rit &amp; Tijd</div>
+      <label for="km">Aantal km</label>
+      <input id="km" class="inline" type="number" min="0" step="0.1" inputmode="decimal" placeholder="0" />
+
+      <div class="times" style="margin-top:14px;">
+        <div>Starttijd: <span id="startOut" class="time-val">–</span></div>
+        <div>Eindtijd: <span id="endOut" class="time-val">–</span></div>
+      </div>
+
+      <div class="footer" style="margin-top:16px;">
+        <div class="grid-2">
+          <button id="btnStart" class="btn-start">START</button>
+          <button id="btnStop" class="btn-stop btn-disabled">STOP</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="card totals">
+      <div class="group-title">Totaal bedrag</div>
+      <div class="pill" id="totalOut">€ 0,00</div>
+      <div class="breakdown" id="breakdown"></div>
+    </section>
+  </main>
+
+  <script>
+    (function(){
+      const formatEUR = (v)=> new Intl.NumberFormat('nl-BE',{style:'currency',currency:'EUR'}).format(v||0);
+      const el = id => document.getElementById(id);
+
+      const rateHour   = el('rateHour');
+      const rateTravel = el('rateTravel');
+      const stdCost    = el('stdCost');
+      const km         = el('km');
+      const startOut   = el('startOut');
+      const endOut     = el('endOut');
+      const totalOut   = el('totalOut');
+      const breakdown  = el('breakdown');
+      const btnStart   = el('btnStart');
+      const btnStop    = el('btnStop');
+
+      // LocalStorage keys
+      const LS = {
+        rateHour:   'vih_rate_hour',
+        rateTravel: 'vih_rate_travel',
+        stdCost:    'vih_std_cost'
+      };
+
+      // Restore persisted settings
+      function restore(){
+        const rh = localStorage.getItem(LS.rateHour);
+        const rt = localStorage.getItem(LS.rateTravel);
+        const sc = localStorage.getItem(LS.stdCost);
+        if(rh!==null) rateHour.value = Number(rh);
+        if(rt!==null) rateTravel.value = Number(rt);
+        if(sc!==null) stdCost.checked = sc === '1';
+      }
+
+      // Persist immediately while typing (and on change/blur)
+      function persistRate(inp){
+        localStorage.setItem(
+          inp===rateHour ? LS.rateHour : LS.rateTravel,
+          String(Math.max(0, Number(inp.value)||0))
+        );
+      }
+      [rateHour, rateTravel].forEach(inp => {
+        ['input','change','blur'].forEach(evt => inp.addEventListener(evt, ()=>persistRate(inp)));
+      });
+      stdCost.addEventListener('change', ()=> localStorage.setItem(LS.stdCost, stdCost.checked?'1':'0'));
+
+      let startTS = null; // Date instance
+      let endTS   = null;
+
+      function fmt(dt){
+        if(!dt) return '–';
+        return dt.toLocaleTimeString('nl-BE', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
+      }
+
+      function enable(elm, on){
+        elm.classList.toggle('btn-disabled', !on);
+        if(on){ elm.removeAttribute('aria-disabled'); } else { elm.setAttribute('aria-disabled','true'); }
+      }
+
+      btnStart.addEventListener('click', ()=>{
+        startTS = new Date();
+        endTS = null;
+        startOut.textContent = fmt(startTS);
+        endOut.textContent = '–';
+        enable(btnStart, false);
+        enable(btnStop, true);
+      });
+
+      btnStop.addEventListener('click', ()=>{
+        if(!startTS) return; // ignore if not started
+        endTS = new Date();
+        endOut.textContent = fmt(endTS);
+        enable(btnStop, false);
+        enable(btnStart, true);
+        calculate();
+      });
+
+      function diffMs(a,b){
+        return Math.max(0, b.getTime() - a.getTime());
+      }
+
+      function billedHoursBetween(a,b){
+        const ms = diffMs(a,b);
+        const fullHours = Math.floor(ms / 3600000);
+        const remMs = ms - fullHours * 3600000;
+        const remMinutes = Math.floor(remMs / 60000);
+        const extra = remMinutes === 0 ? 0 : (remMinutes <= 30 ? 0.5 : 1);
+        return fullHours + extra;
+      }
+
+      function hoursBetween(a,b){
+        const ms = diffMs(a,b);
+        return Math.max(0, ms / 3600000);
+      }
+
+      function n(v){ return Number(v)||0; }
+
+      function calculate(){
+        const rh = Math.max(0, n(rateHour.value));
+        const rt = Math.max(0, n(rateTravel.value));
+        const kms = Math.max(0, n(km.value));
+        const std = stdCost.checked ? 5 : 0;
+
+        let workedH = 0;
+        let billedH = 0;
+        if(startTS && endTS){
+          workedH = hoursBetween(startTS, endTS);
+          billedH = billedHoursBetween(startTS, endTS);
+        }
+
+        const labour   = billedH * rh;
+        const travel   = kms * rt;
+        const total    = labour + travel + std;
+
+        totalOut.textContent = formatEUR(total);
+        breakdown.innerHTML = `
+          Uren x uurtarief: ${workedH.toFixed(2)} u (gefactureerd: ${billedH.toFixed(2)} u) × ${formatEUR(rh)} = <strong>${formatEUR(labour)}</strong><br/>
+          Km x vervoertarief: ${kms.toFixed(1)} km × ${formatEUR(rt)} = <strong>${formatEUR(travel)}</strong><br/>
+          Standaardkost: ${std ? formatEUR(5) : formatEUR(0)}
+        `;
+      }
+
+      // Recalculate when fields change (after a stop is done)
+      [km, rateHour, rateTravel, stdCost].forEach(x=> x.addEventListener('input', ()=>{ if(endTS) calculate(); }));
+
+      restore();
+    })();
+  </script>
+</body>
+</html>
