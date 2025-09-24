@@ -1,0 +1,24 @@
+# 🔒 Verberg gevoelige bestanden
+budgetplanner/config.php
+
+# 🔑 Eventuele environment files (mocht je die later gebruiken)
+.env
+.env.local
+.env.*
+
+# 🗑️ Logs en cache
+*.log
+*.cache
+*.tmp
+
+# ⚙️ OS-specifiek
+.DS_Store
+Thumbs.db
+
+# 📂 IDE/editor folders
+.vscode/
+.idea/
+
+# ⚙️ Dependency folders (mocht je later npm/composer gebruiken)
+node_modules/
+vendor/
