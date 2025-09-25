@@ -275,6 +275,38 @@ function saveIncomeSplits(splits){
   saveMeta(m);
 }
 
+/* --- Windows label/select overlap fix (injected CSS) --- */
+(function ensureWindowsFieldFix(){
+  try{
+    if(document.getElementById('winFieldFix')) return;
+    const style = document.createElement('style');
+    style.id = 'winFieldFix';
+    style.textContent = `
+      .field label{
+        display:block;
+        margin-bottom:6px;
+        line-height:1.2;
+        white-space:normal;
+      }
+      .field select,
+      .field input[type="number"],
+      .field input[type="text"]{
+        display:block;
+        width:100%;
+        height:36px;
+        line-height:36px;
+        padding:0 10px;
+        box-sizing:border-box;
+        white-space:nowrap;
+        background-clip: padding-box;
+      }
+      /* Prevent text bleed in tight grids on Windows renderers */
+      .row{ gap:8px; }
+    `;
+    document.head.appendChild(style);
+  }catch(e){ /* no-op */ }
+})();
+
     // ====== Rendering ======
     function render(){
       // Month text value (bv. "september 2025")
