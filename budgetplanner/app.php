@@ -615,6 +615,46 @@ button.icon-btn:hover {
   .mobile-toc a{ padding:6px 10px; border:1px solid var(--border); border-radius:999px; text-decoration:none; color:var(--text); font-size:12px }
 }
 
+/* --- Fix: overlappende Ja/Nee labels in toggle op Windows --- */
+.toggle-text{
+  position: relative;
+  width: 48px;                 /* vaste breedte zodat tekst niet schuift */
+  height: 24px;
+  line-height: 24px;           /* centreren */
+  overflow: hidden;            /* verberg wat buiten de container valt */
+  text-align: center;
+  user-select: none;
+  white-space: nowrap;
+}
+.toggle-text .on,
+.toggle-text .off{
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%,-50%);
+  margin: 0;
+  padding: 0;
+  /* Belangrijk: inactieve variant volledig “uit” zetten, niet alleen opacity */
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+input[type="checkbox"]:checked + .toggle-text .on{
+  opacity: 1; visibility: visible; pointer-events: auto;
+}
+input[type="checkbox"]:checked + .toggle-text .off{
+  opacity: 0; visibility: hidden; pointer-events: none;
+}
+input[type="checkbox"]:not(:checked) + .toggle-text .on{
+  opacity: 0; visibility: hidden; pointer-events: none;
+}
+input[type="checkbox"]:not(:checked) + .toggle-text .off{
+  opacity: 1; visibility: visible; pointer-events: auto;
+}
+
+/* Kleine robuustheid voor Windows-font rendering */
+.toggle-text{ font-variant-ligatures: none; }
+
   </style>
 
      <link rel="icon" sizes="32x32" href="favicon-32x32.png">
