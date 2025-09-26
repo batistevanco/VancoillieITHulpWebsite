@@ -217,6 +217,14 @@
 
     function debugLog(...args){ if(window && window.console){ console.log('[DEBUG]', ...args); } }
 
+    // Bepaal doelpagina op basis van viewport (smartphone vs groter)
+    function isMobileViewport(){
+      // Breekpunt ~768px + fallback op userAgent
+      const small = window.matchMedia && window.matchMedia('(max-width: 768px)').matches;
+      const uaMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+      return small || uaMobile;
+    }
+
     function setValidity(el, ok, message=""){
       const err = document.querySelector(`.error[data-error-for="${el.id}"]`);
       if(ok){
@@ -401,8 +409,9 @@
         debugLog('login.php response:', json);
         if(json.ok){
           showFormMessage(msg, 'Inloggen gelukt. Je wordt doorgestuurd...', true);
-          // TODO: vervang door je echte app pagina
-          window.location.href = json.redirect || 'app.php';
+          // Kies doelpagina op basis van schermgrootte
+          const target = isMobileViewport() ? 'mobileApp/mobileApp.php' : 'app.php';
+          window.location.href = json.redirect || target;
         } else {
           showFormMessage(msg, json.message || 'Gegevens onjuist.');
           if(json.raw){ showFormMessage(msg, (json.message||'') + "\n" + json.raw); }
