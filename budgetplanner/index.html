@@ -411,7 +411,7 @@
           showFormMessage(msg, 'Inloggen gelukt. Je wordt doorgestuurd...', true);
           // Kies doelpagina op basis van schermgrootte
           const target = isMobileViewport() ? 'mobileApp/mobileApp.php' : 'app.php';
-          window.location.href = json.redirect || target;
+          window.location.href = target;
         } else {
           showFormMessage(msg, json.message || 'Gegevens onjuist.');
           if(json.raw){ showFormMessage(msg, (json.message||'') + "\n" + json.raw); }
