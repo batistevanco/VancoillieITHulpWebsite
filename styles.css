@@ -143,6 +143,20 @@
     font-weight: bold;
   }
 
+ /* Center the mobile brand independently of the toggler button */
+    @media (max-width: 767.98px) {
+      .navbar .container-fluid { position: relative; }
+      #mobileBrand {
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+        margin: 0;       /* ignore mx-auto behavior */
+        right: auto;     /* ensure no flex push from toggler */
+      }
+      /* make sure toggler stays clickable on the right */
+      .navbar .navbar-toggler { position: relative; z-index: 2; }
+    }
+
   .btn-back, #btn-back, #btn-contactus {
     display: inline-block;
     background-color: #D64933;

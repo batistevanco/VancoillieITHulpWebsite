@@ -13,7 +13,7 @@
     
     <!-- Bootstrap JavaScript Bundle with Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <link rel="stylesheet" href="styles.css?v=40">
+    <link rel="stylesheet" href="styles.css?v=41">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 
      <!-- Favicon -->    
@@ -25,6 +25,7 @@
      <link rel="shortcut icon" type="image/x-icon" href="favicon-48x48.ico">
 
     <link rel="canonical" href="https://www.vancoillieithulp.be/">
+
     
 </head>
 
@@ -34,13 +35,13 @@
       <nav class="navbar navbar-expand-md bg-light sticky-top border-bottom 2px">
         <div class="container-fluid">
             <!-- Desktop text -->
-            <div class="navbar-left">
+            <div class="navbar-left d-none d-md-block">
                 <span class="navbar-text ms-2" id="navbartext">Vancoillie <span class="highlight">IT</span> Hulp</span>
             </div>
 
             <!-- Mobile text -->
-            <a class="navbar-brand d-md-none mx-auto" href="#">
-                <span class="mobileNavText">Vancoillie <span class="highlight">IT</span> Hulp</span>
+            <a class="navbar-brand d-md-none" id="mobileBrand" href="#">
+              <span class="mobileNavText">Vancoillie <span class="highlight">IT</span> Hulp</span>
             </a>
 
             <!-- Toggler button -->
