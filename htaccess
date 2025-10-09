@@ -1,6 +1,11 @@
-#remove html file extension-e.g. https://example.com/file.html will become https://example.com/file
-RewriteEngine on 
-RewriteCond %{REQUEST_FILENAME} !-d
-RewriteCond %{REQUEST_FILENAME}\.html -f
-RewriteRule ^(.*)$ $1.html [NC,L]
+# ---------------------------------------------
+# Verberg .html extensies in de URL
+# ---------------------------------------------
+RewriteEngine On
 
+# Zorg dat bestaande bestanden of mappen niet overschreven worden
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+
+# Herschrijf URL’s zonder .html naar de juiste pagina
+RewriteRule ^([^/]+)/?$ $1.html [L]
