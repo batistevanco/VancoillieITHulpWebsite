@@ -22,3 +22,6 @@ Thumbs.db
 # ⚙️ Dependency folders (mocht je later npm/composer gebruiken)
 node_modules/
 vendor/
+
+#hide news feed
+/news/
