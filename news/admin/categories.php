@@ -2,7 +2,6 @@
 session_start(); if(empty($_SESSION['ok'])){ header('Location: login.php'); exit; }
 require_once __DIR__.'/../config.php';
 
-$newPostBlock = <<<'PHP'
 if($_SERVER['REQUEST_METHOD']==='POST'){
   // Verwijderen (heeft voorrang als een per-rij knop werd geklikt)
   if(isset($_POST['delete'])){
@@ -42,8 +41,7 @@ if($_SERVER['REQUEST_METHOD']==='POST'){
     }
   }
 }
-PHP;
-eval(substr($newPostBlock, 0, -4)); // Remove trailing PHP tag
+
 $cats = db()->query("SELECT * FROM categories ORDER BY name_nl")->fetchAll(PDO::FETCH_ASSOC);
 ?>
 <!doctype html><html lang="nl"><meta charset="utf-8">
