@@ -1,0 +1,1 @@
+<?php header('X-Robots-Tag: noindex, nofollow, noarchive', true); session_start(); session_destroy(); header('Location: login.php'); 

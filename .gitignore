@@ -23,5 +23,11 @@ Thumbs.db
 node_modules/
 vendor/
 
-#hide news feed
-/news/
+# Laat de news folder toe, maar negeer gevoelige/dynamische files
+/news/config.php
+/news/admin/uploads/
+!/news/admin/uploads/.gitkeep
+/news/logs/
+*.log
+*.bak
+*.tmp
