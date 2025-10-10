@@ -1,6 +1,8 @@
 <?php header('X-Robots-Tag: noindex, nofollow, noarchive', true);
 session_start(); if(empty($_SESSION['ok'])){ header('Location: login.php'); exit; }
-require_once __DIR__.'/../config.php';
+require_once __DIR__.'/../config.php'; ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
 
 $cats = db()->query("SELECT * FROM categories ORDER BY name_nl")->fetchAll(PDO::FETCH_ASSOC);
 $arts = db()->query("SELECT a.*, c.name_nl AS cat_nl FROM articles a JOIN categories c ON c.id=a.category_id ORDER BY date_published DESC")->fetchAll(PDO::FETCH_ASSOC);
