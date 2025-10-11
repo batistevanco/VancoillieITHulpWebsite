@@ -11,7 +11,6 @@ $lang   = ($langIn === 'en') ? 'en' : 'nl';
 
 try {
   if ($action === 'categories') {
-    // Kies kolom op basis van taal
     $field = ($lang === 'en') ? 'name_en' : 'name_nl';
     $sql = "SELECT id, $field AS name FROM categories ORDER BY $field";
     $stmt = db()->prepare($sql);
@@ -28,7 +27,6 @@ try {
       $params[':cid'] = (int)$_GET['category_id'];
     }
 
-    // Taalspecifieke velden
     $titleField = ($lang === 'en') ? 'a.title_en'       : 'a.title_nl';
     $descField  = ($lang === 'en') ? 'a.description_en' : 'a.description_nl';
     $catField   = ($lang === 'en') ? 'c.name_en'        : 'c.name_nl';
@@ -38,6 +36,7 @@ try {
              $titleField AS title,
              $descField  AS description,
              a.image_path,
+             a.full_url,
              a.date_published,
              a.category_id,
              $catField   AS categoryName
@@ -52,11 +51,22 @@ try {
     $q->execute($params);
 
     $rows = array_map(function($r){
+      // normaliseer afbeelding
+      $img = $r['image_path'] ? absoluteUrl($r['image_path']) : null;
+
+      // normaliseer full_url → absolute maken als het relatief pad is
+      $full = trim((string)($r['full_url'] ?? ''));
+      if ($full !== '' && !preg_match('~^https?://~i', $full)) {
+        $full = absoluteUrl($full);
+      }
+      if ($full === '') $full = null;
+
       return [
         'id'          => (int)$r['id'],
         'title'       => $r['title'],
         'description' => $r['description'],
-        'imageURL'    => $r['image_path'] ? absoluteUrl($r['image_path']) : null,
+        'imageURL'    => $img,
+        'fullURL'     => $full,
         'date'        => gmdate('c', strtotime($r['date_published'])),
         'categoryID'  => (int)$r['category_id'],
         'categoryName'=> $r['categoryName']
