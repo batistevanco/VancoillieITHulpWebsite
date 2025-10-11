@@ -1,27 +1,29 @@
 <?php
 declare(strict_types=1);
 
-// Enable verbose errors when you append ?debug=1 to the URL
+// --- TEMP debug schakelaar ---
 if (isset($_GET['debug'])) {
   ini_set('display_errors', '1');
   ini_set('display_startup_errors', '1');
   error_reporting(E_ALL);
 }
 
-// Auth guard (fallback if auth.php is missing)
+// --- Auth (met fallback als auth.php ontbreekt) ---
 $__auth = __DIR__ . '/auth.php';
 if (file_exists($__auth)) {
-  require_once $__auth;
+  require_once $__auth;              // levert sessie + csrf_field() etc.
 } else {
   if (session_status() !== PHP_SESSION_ACTIVE) session_start();
   if (empty($_SESSION['admin_logged_in'])) {
-    header('Location: login.php');
+    header('Location: login.php');   // zorg dat login.php bestaat
     exit;
   }
 }
 
+// --- Config / DB ---
 require_once __DIR__ . '/../config.php';
 
+// --- Data laden ---
 try {
   $sql = "
     SELECT a.id,
@@ -41,13 +43,13 @@ try {
   if (!isset($_GET['debug'])) {
     http_response_code(500);
   }
-  echo '<pre style="padding:16px;background:#fff3cd;color:#1f2937;border:1px solid #facc15;border-radius:8px;">';
+  echo '<pre style="padding:16px;background:#fff3cd;color:#1f2937;border:1px solid #facc15;border-radius:8px;white-space:pre-wrap">';
   echo "Dashboard kon niet laden.\n\n";
   echo htmlspecialchars($e->getMessage());
   if (isset($_GET['debug'])) {
     echo "\n\nStack trace:\n" . htmlspecialchars($e->getTraceAsString());
   }
-  echo "\n</pre>";
+  echo "</pre>";
   exit;
 }
 ?>
@@ -96,11 +98,11 @@ try {
     <?php foreach ($rows as $r): ?>
       <tr>
         <td><?= (int)$r['id'] ?></td>
-        <td><?= htmlspecialchars($r['title_nl'] ?: $r['title_en']) ?></td>
+        <td><?= htmlspecialchars($r['title_nl'] ?: ($r['title_en'] ?? '—')) ?></td>
         <td><?= htmlspecialchars(($r['cat_nl'] ?? '—') . ' / ' . ($r['cat_en'] ?? '—')) ?></td>
-        <td><?= htmlspecialchars($r['date_published']) ?></td>
+        <td><?= htmlspecialchars($r['date_published'] ?? '—') ?></td>
         <td>
-          <?php if ((int)$r['is_published'] === 1): ?>
+          <?php if ((int)($r['is_published'] ?? 0) === 1): ?>
             <span class="pill pub">Gepubliceerd</span>
           <?php else: ?>
             <span class="pill draft">Concept</span>
@@ -111,19 +113,17 @@ try {
             $url = trim((string)$r['full_url']);
             if ($url !== '' && !preg_match('~^https?://~i', $url)) {
               $proto = (!empty($_SERVER['HTTPS']) ? 'https' : 'http').'://';
-              $base  = $proto.$_SERVER['HTTP_HOST'].dirname(dirname($_SERVER['SCRIPT_NAME']));
+              $base  = $proto.$_SERVER['HTTP_HOST'].dirname(dirname($_SERVER['SCRIPT_NAME'])); // /news
               $url   = rtrim($base,'/').'/'.ltrim($url,'/');
             }
           ?>
             <a href="<?= htmlspecialchars($url) ?>" target="_blank" rel="noopener">🔗 open</a>
-          <?php else: ?>
-            —
-          <?php endif; ?>
+          <?php else: ?>—<?php endif; ?>
         </td>
         <td>
           <a class="btn ghost" href="edit.php?id=<?= (int)$r['id'] ?>">Bewerken</a>
           <form class="inline" method="post" action="delete.php" onsubmit="return confirm('Verwijderen?')">
-            <?= csrf_field() ?>
+            <?= function_exists('csrf_field') ? csrf_field() : '' ?>
             <input type="hidden" name="id" value="<?= (int)$r['id'] ?>">
             <button class="btn" type="submit" style="background:#ef4444">Verwijderen</button>
           </form>
