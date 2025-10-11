@@ -1,56 +1,73 @@
-<?php header('X-Robots-Tag: noindex, nofollow, noarchive', true);
+<?php
+header('X-Robots-Tag: noindex, nofollow, noarchive', true);
 header('Content-Type: application/json; charset=utf-8');
 require_once __DIR__.'/config.php';
 
 $action = $_GET['action'] ?? 'articles';
-$lang   = ($_GET['lang'] ?? 'nl') === 'en' ? 'en' : 'nl';
+
+// Whitelist taal
+$langIn = $_GET['lang'] ?? 'nl';
+$lang   = ($langIn === 'en') ? 'en' : 'nl';
 
 try {
   if ($action === 'categories') {
-    $stmt = db()->query("SELECT id, 
-      CASE WHEN :lang='en' THEN name_en ELSE name_nl END AS name
-      FROM categories ORDER BY name_nl");
-    $stmt->execute([':lang'=>$lang]);
-    echo json_encode($stmt->fetchAll(PDO::FETCH_ASSOC)); exit;
+    // Kies kolom op basis van taal
+    $field = ($lang === 'en') ? 'name_en' : 'name_nl';
+    $sql = "SELECT id, $field AS name FROM categories ORDER BY $field";
+    $stmt = db()->prepare($sql);
+    $stmt->execute();
+    echo json_encode($stmt->fetchAll(PDO::FETCH_ASSOC), JSON_UNESCAPED_UNICODE);
+    exit;
   }
 
   if ($action === 'articles') {
-    $where = "WHERE is_published=1";
-    $params = [':lang'=>$lang];
+    $where  = "WHERE a.is_published = 1";
+    $params = [];
     if (!empty($_GET['category_id'])) {
-      $where .= " AND category_id = :cid";
+      $where .= " AND a.category_id = :cid";
       $params[':cid'] = (int)$_GET['category_id'];
     }
-    $q = db()->prepare("
+
+    // Taalspecifieke velden
+    $titleField = ($lang === 'en') ? 'a.title_en'       : 'a.title_nl';
+    $descField  = ($lang === 'en') ? 'a.description_en' : 'a.description_nl';
+    $catField   = ($lang === 'en') ? 'c.name_en'        : 'c.name_nl';
+
+    $sql = "
       SELECT a.id,
-        CASE WHEN :lang='en' THEN a.title_en ELSE a.title_nl END AS title,
-        CASE WHEN :lang='en' THEN a.description_en ELSE a.description_nl END AS description,
-        a.image_path,
-        a.date_published,
-        a.category_id,
-        CASE WHEN :lang='en' THEN c.name_en ELSE c.name_nl END AS categoryName
+             $titleField AS title,
+             $descField  AS description,
+             a.image_path,
+             a.date_published,
+             a.category_id,
+             $catField   AS categoryName
       FROM articles a
-      JOIN categories c ON c.id=a.category_id
+      JOIN categories c ON c.id = a.category_id
       $where
       ORDER BY a.date_published DESC
       LIMIT 100
-    ");
+    ";
+
+    $q = db()->prepare($sql);
     $q->execute($params);
+
     $rows = array_map(function($r){
       return [
-        'id'=>(int)$r['id'],
-        'title'=>$r['title'],
-        'description'=>$r['description'],
-        'imageURL'=> $r['image_path'] ? absoluteUrl($r['image_path']) : null,
-        'date'=> gmdate('c', strtotime($r['date_published'])),
-        'categoryID'=>(int)$r['category_id'],
-        'categoryName'=>$r['categoryName']
+        'id'          => (int)$r['id'],
+        'title'       => $r['title'],
+        'description' => $r['description'],
+        'imageURL'    => $r['image_path'] ? absoluteUrl($r['image_path']) : null,
+        'date'        => gmdate('c', strtotime($r['date_published'])),
+        'categoryID'  => (int)$r['category_id'],
+        'categoryName'=> $r['categoryName']
       ];
     }, $q->fetchAll(PDO::FETCH_ASSOC));
-    echo json_encode($rows); exit;
+
+    echo json_encode($rows, JSON_UNESCAPED_UNICODE);
+    exit;
   }
 
-  // Mutating endpoints (optional for admin UI via fetch)
+  // (optioneel) mutaties via bearer-token
   if ($action === 'create' || $action === 'update' || $action === 'delete') {
     requireAuth();
   }
@@ -59,7 +76,8 @@ try {
     $id = (int)($_POST['id'] ?? 0);
     $stmt = db()->prepare("DELETE FROM articles WHERE id=:id");
     $stmt->execute([':id'=>$id]);
-    echo json_encode(['ok'=>true]); exit;
+    echo json_encode(['ok'=>true]);
+    exit;
   }
 
   http_response_code(400);

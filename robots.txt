@@ -1,0 +1,12 @@
+User-agent: *
+# Admin UI & API niet crawlen
+Disallow: /news/admin/
+Disallow: /news/api.php
+# Uploads map niet crawlen
+Disallow: /news/admin/uploads/
+
+# Optioneel: blokkeer andere gevoelige paden
+Disallow: /cgi-bin/
+Disallow: /wp-admin/
+
+Sitemap: https://vancoillieithulp.be/sitemap.xml
