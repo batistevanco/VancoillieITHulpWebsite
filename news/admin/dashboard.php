@@ -1,6 +1,8 @@
 <?php
 require_once __DIR__.'/auth.php';
 require_once __DIR__.'/../config.php';
+ini_set('display_errors', 1);
+error_reporting(E_ALL);
 
 $st = db()->query("
   SELECT a.id, a.title_nl, a.title_en, a.is_published, a.date_published, a.full_url,
