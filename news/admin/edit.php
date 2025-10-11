@@ -23,72 +23,88 @@ $cats = allCategories();
 // Opslaan
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   // Verzamel waarden
-  $title_nl = trim($_POST['title_nl'] ?? '');
-  $title_en = trim($_POST['title_en'] ?? '');
-  $desc_nl  = trim($_POST['description_nl'] ?? '');
-  $desc_en  = trim($_POST['description_en'] ?? '');
-  $cat_id   = (int)($_POST['category_id'] ?? 0);
-  $pub      = isset($_POST['is_published']) ? 1 : 0;
-  $date_pub = $_POST['date_published'] ?? date('Y-m-d H:i:s');
-  $full_url = trim($_POST['full_url'] ?? '');
-  if ($full_url === '') $full_url = null;
+    $title_nl = trim($_POST['title_nl'] ?? '');
+    $title_en = trim($_POST['title_en'] ?? '');
+    $desc_nl  = trim($_POST['description_nl'] ?? '');
+    $desc_en  = trim($_POST['description_en'] ?? '');
+    $cat_id   = (int)($_POST['category_id'] ?? 0);
+    $pub      = isset($_POST['is_published']) ? 1 : 0;
 
-  // Afbeelding upload (optioneel)
-  $image_path = $article['image_path'] ?? null;
-  if (!empty($_FILES['image']['name'])) {
-    $up = $_FILES['image'];
-    if ($up['error'] === UPLOAD_ERR_OK) {
-      $ext = strtolower(pathinfo($up['name'], PATHINFO_EXTENSION));
-      $fn  = 'uploads/'.date('YmdHis').'_'.bin2hex(random_bytes(4)).'.'.$ext;
-      $dest = dirname(__DIR__).'/'.$fn; // /news/uploads/...
-      if (!is_dir(dirname($dest))) { @mkdir(dirname($dest), 0775, true); }
-      if (move_uploaded_file($up['tmp_name'], $dest)) {
-        $image_path = $fn; // relatieve path onder /news/
-      }
+    // datetime-local stuurt 'YYYY-MM-DDTHH:MM' → MySQL wil 'YYYY-MM-DD HH:MM:SS'
+    $rawDate  = trim($_POST['date_published'] ?? '');
+    if ($rawDate !== '') {
+        $date_pub = str_replace('T', ' ', $rawDate);
+        // als er geen seconden zijn, voeg ':00' toe
+        if (preg_match('/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/', $date_pub)) {
+            $date_pub .= ':00';
+        }
+    } else {
+        $date_pub = date('Y-m-d H:i:s');
     }
-  }
+
+    // volledige link (optioneel)
+    $full_url = trim($_POST['full_url'] ?? '');
+    if ($full_url === '') $full_url = null;
+
+    // huidig image-pad veilig lezen (ook als $article null is)
+    $currentImage = (is_array($article) && array_key_exists('image_path', $article)) ? $article['image_path'] : null;
+
+    // Afbeelding upload (optioneel)
+    $image_path = $currentImage;
+    if (!empty($_FILES['image']['name'])) {
+        $up = $_FILES['image'];
+        if ($up['error'] === UPLOAD_ERR_OK) {
+            $ext = strtolower(pathinfo($up['name'], PATHINFO_EXTENSION));
+            $fn  = 'uploads/'.date('YmdHis').'_'.bin2hex(random_bytes(4)).'.'.$ext;
+            $dest = dirname(__DIR__).'/'.$fn; // /news/uploads/...
+            if (!is_dir(dirname($dest))) { @mkdir(dirname($dest), 0775, true); }
+            if (move_uploaded_file($up['tmp_name'], $dest)) {
+                $image_path = $fn; // relatieve path onder /news/
+            }
+        }
+    }
 
   if ($id > 0) {
     // UPDATE
     $sql = "UPDATE articles SET
-              title_nl=:title_nl,
-              title_en=:title_en,
-              description_nl=:desc_nl,
-              description_en=:desc_en,
-              image_path=:image_path,
-              full_url=:full_url,
-              date_published=:date_published,
-              category_id=:category_id,
-              is_published=:is_published
+          title_nl=:title_nl,
+          title_en=:title_en,
+          description_nl=:desc_nl,
+          description_en=:desc_en,
+          image_path=:image_path,
+          full_url=:full_url,
+          date_published=:date_published,
+          category_id=:category_id,
+          is_published=:is_published
             WHERE id=:id";
     $st = db()->prepare($sql);
     $st->execute([
-      ':title_nl'=>$title_nl, ':title_en'=>$title_en,
-      ':desc_nl'=>$desc_nl,   ':desc_en'=>$desc_en,
-      ':image_path'=>$image_path,
-      ':full_url'=>$full_url,
-      ':date_published'=>$date_pub,
-      ':category_id'=>$cat_id,
-      ':is_published'=>$pub,
-      ':id'=>$id
+    ':title_nl'=>$title_nl, ':title_en'=>$title_en,
+    ':desc_nl'=>$desc_nl,   ':desc_en'=>$desc_en,
+    ':image_path'=>$image_path,
+    ':full_url'=>$full_url,
+    ':date_published'=>$date_pub,
+    ':category_id'=>$cat_id,
+    ':is_published'=>$pub,
+    ':id'=>$id
     ]);
   } else {
     // INSERT
     $sql = "INSERT INTO articles
-              (title_nl, title_en, description_nl, description_en,
-               image_path, full_url, date_published, category_id, is_published)
+            (title_nl, title_en, description_nl, description_en,
+            image_path, full_url, date_published, category_id, is_published)
             VALUES
-              (:title_nl, :title_en, :desc_nl, :desc_en,
-               :image_path, :full_url, :date_published, :category_id, :is_published)";
+            (:title_nl, :title_en, :desc_nl, :desc_en,
+            :image_path, :full_url, :date_published, :category_id, :is_published)";
     $st = db()->prepare($sql);
     $st->execute([
-      ':title_nl'=>$title_nl, ':title_en'=>$title_en,
-      ':desc_nl'=>$desc_nl,   ':desc_en'=>$desc_en,
-      ':image_path'=>$image_path,
-      ':full_url'=>$full_url,
-      ':date_published'=>$date_pub,
-      ':category_id'=>$cat_id,
-      ':is_published'=>$pub
+    ':title_nl'=>$title_nl, ':title_en'=>$title_en,
+    ':desc_nl'=>$desc_nl,   ':desc_en'=>$desc_en,
+    ':image_path'=>$image_path,
+    ':full_url'=>$full_url,
+    ':date_published'=>$date_pub,
+    ':category_id'=>$cat_id,
+    ':is_published'=>$pub
     ]);
     $id = (int)db()->lastInsertId();
   }
