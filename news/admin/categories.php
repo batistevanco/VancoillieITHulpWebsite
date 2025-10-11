@@ -58,6 +58,17 @@ $rows = db()->query("SELECT id, name_nl, name_en FROM categories ORDER BY name_n
     .row{display:flex;gap:12px}
     .btn{padding:.6rem .9rem;border-radius:8px;border:0;background:#2563eb;color:#fff;cursor:pointer}
     .ghost{background:#f3f4f6;color:#111}
+    /* --- Mobile responsive table --- */
+    @media (max-width: 640px){
+      table.responsive{border:0}
+      table.responsive thead{border:0;clip:rect(0 0 0 0);height:1px;margin:-1px;overflow:hidden;padding:0;position:absolute;width:1px}
+      table.responsive tr{display:block;margin:0 0 12px;border:1px solid #e5e7eb;border-radius:12px;padding:10px;background:Canvas}
+      table.responsive td{display:flex;gap:12px;justify-content:space-between;align-items:center;border:none;border-bottom:1px dashed #e5e7eb;padding:8px 10px}
+      table.responsive td:last-child{border-bottom:none}
+      table.responsive td::before{content:attr(data-label);font-weight:600;color:#6b7280}
+      .row{flex-wrap:wrap}
+      .btn{padding:.55rem .8rem;font-size:14px}
+    }
   </style>
 </head>
 <body>
@@ -65,27 +76,27 @@ $rows = db()->query("SELECT id, name_nl, name_en FROM categories ORDER BY name_n
 
   <form method="post">
     <?= csrf_field() ?>
-    <table>
+    <table class="responsive">
       <thead>
         <tr><th>ID</th><th>NL</th><th>EN</th><th>Acties</th></tr>
       </thead>
       <tbody>
         <?php foreach ($rows as $r): ?>
           <tr>
-            <td><input type="text" value="<?= (int)$r['id'] ?>" readonly style="width:60px"></td>
-            <td><input type="text" name="name_nl[]" value="<?= htmlspecialchars($r['name_nl']) ?>"></td>
-            <td><input type="text" name="name_en[]" value="<?= htmlspecialchars($r['name_en']) ?>"></td>
-            <td class="row">
+            <td data-label="ID"><input type="text" value="<?= (int)$r['id'] ?>" readonly style="width:60px"></td>
+            <td data-label="NL"><input type="text" name="name_nl[]" value="<?= htmlspecialchars($r['name_nl']) ?>"></td>
+            <td data-label="EN"><input type="text" name="name_en[]" value="<?= htmlspecialchars($r['name_en']) ?>"></td>
+            <td data-label="Acties" class="row actions">
               <input type="hidden" name="id[]" value="<?= (int)$r['id'] ?>">
               <button class="btn ghost" name="delete" value="1" formaction="categories.php" formmethod="post" onclick="return confirm('Verwijderen?')">Verwijderen</button>
             </td>
           </tr>
         <?php endforeach; ?>
         <tr>
-          <td>+</td>
-          <td><input type="text" name="new_name_nl" placeholder="Nieuwe NL.."></td>
-          <td><input type="text" name="new_name_en" placeholder="Nieuwe EN.."></td>
-          <td></td>
+          <td data-label="ID">+</td>
+          <td data-label="NL"><input type="text" name="new_name_nl" placeholder="Nieuwe NL.."></td>
+          <td data-label="EN"><input type="text" name="new_name_en" placeholder="Nieuwe EN.."></td>
+          <td data-label="Acties"></td>
         </tr>
       </tbody>
     </table>

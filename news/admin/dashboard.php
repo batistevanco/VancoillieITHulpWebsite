@@ -71,6 +71,19 @@ try {
     .pill.pub{background:#dcfce7;color:#166534}
     .pill.draft{background:#fee2e2;color:#991b1b}
     form.inline{display:inline}
+
+    /* --- Mobile responsive table --- */
+    @media (max-width: 640px){
+      table.responsive{border:0}
+      table.responsive thead{border:0;clip:rect(0 0 0 0);height:1px;margin:-1px;overflow:hidden;padding:0;position:absolute;width:1px}
+      table.responsive tr{display:block;margin:0 0 12px;border:1px solid #e5e7eb;border-radius:12px;padding:10px;background:Canvas}
+      table.responsive td{display:flex;gap:12px;justify-content:space-between;align-items:center;border:none;border-bottom:1px dashed #e5e7eb;padding:8px 10px}
+      table.responsive td:last-child{border-bottom:none}
+      table.responsive td::before{content:attr(data-label);font-weight:600;color:#6b7280}
+      .actions{display:flex;flex-wrap:wrap;gap:8px}
+      .btn{padding:.55rem .8rem;font-size:14px}
+      header nav .btn{padding:.55rem .8rem}
+    }
   </style>
 </head>
 <body>
@@ -82,7 +95,7 @@ try {
     </nav>
   </header>
 
-  <table>
+  <table class="responsive">
     <thead>
       <tr>
         <th>ID</th>
@@ -97,18 +110,18 @@ try {
     <tbody>
     <?php foreach ($rows as $r): ?>
       <tr>
-        <td><?= (int)$r['id'] ?></td>
-        <td><?= htmlspecialchars($r['title_nl'] ?: ($r['title_en'] ?? '—')) ?></td>
-        <td><?= htmlspecialchars(($r['cat_nl'] ?? '—') . ' / ' . ($r['cat_en'] ?? '—')) ?></td>
-        <td><?= htmlspecialchars($r['date_published'] ?? '—') ?></td>
-        <td>
+        <td data-label="ID"><?= (int)$r['id'] ?></td>
+        <td data-label="Titel (NL)"><?= htmlspecialchars($r['title_nl'] ?: ($r['title_en'] ?? '—')) ?></td>
+        <td data-label="Categorie"><?= htmlspecialchars(($r['cat_nl'] ?? '—') . ' / ' . ($r['cat_en'] ?? '—')) ?></td>
+        <td data-label="Datum"><?= htmlspecialchars($r['date_published'] ?? '—') ?></td>
+        <td data-label="Status">
           <?php if ((int)($r['is_published'] ?? 0) === 1): ?>
             <span class="pill pub">Gepubliceerd</span>
           <?php else: ?>
             <span class="pill draft">Concept</span>
           <?php endif; ?>
         </td>
-        <td>
+        <td data-label="Link">
           <?php if (!empty($r['full_url'])):
             $url = trim((string)$r['full_url']);
             if ($url !== '' && !preg_match('~^https?://~i', $url)) {
@@ -120,7 +133,7 @@ try {
             <a href="<?= htmlspecialchars($url) ?>" target="_blank" rel="noopener">🔗 open</a>
           <?php else: ?>—<?php endif; ?>
         </td>
-        <td>
+        <td data-label="Acties" class="actions">
           <a class="btn ghost" href="edit.php?id=<?= (int)$r['id'] ?>">Bewerken</a>
           <form class="inline" method="post" action="delete.php" onsubmit="return confirm('Verwijderen?')">
             <?= function_exists('csrf_field') ? csrf_field() : '' ?>

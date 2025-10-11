@@ -110,6 +110,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
   <meta charset="utf-8">
   <title><?= $id ? 'Artikel bewerken' : 'Nieuw artikel' ?></title>
   <meta name="robots" content="noindex,nofollow,noarchive">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
     :root{color-scheme:light dark}
     body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;margin:0;padding:16px}
@@ -120,9 +121,21 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
     .row{display:flex;gap:16px}
     .row>div{flex:1}
     .btn{padding:.7rem 1rem;border:0;border-radius:10px;background:#2563eb;color:#fff;cursor:pointer}
-    .ghost{background:#f3f4f6;color:#111;text-decoration:none;padding:.7rem 1rem;border-radius:10px}
+    .ghost{background:#f3f4f6;color:#111;text-decoration:none;padding:.7rem 1rem;border-radius:10px;display:inline-block}
     .imgprev{margin-top:8px;max-width:260px;border-radius:10px;display:block}
     small{color:#6b7280}
+
+    /* --- Mobile responsive form --- */
+    @media (max-width: 640px){
+      .form{padding:0}
+      .row{flex-direction:column; gap:10px}
+      label{margin-top:.5rem}
+      input,textarea,select{font-size:16px} /* voorkomt iOS zoom op focus */
+      .imgprev{max-width:100%; height:auto}
+      .btn{width:100%; padding:.75rem 1rem; font-size:16px}
+      .ghost{width:100%; text-align:center}
+      .actions{display:flex; flex-direction:column; gap:10px}
+    }
   </style>
 </head>
 <body>
@@ -197,7 +210,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
         Gepubliceerd
       </label>
 
-      <div style="display:flex;gap:12px;margin-top:16px">
+      <div class="actions" style="display:flex;gap:12px;margin-top:16px">
         <button class="btn" type="submit">Opslaan</button>
         <a class="ghost" href="dashboard.php">Annuleren</a>
       </div>

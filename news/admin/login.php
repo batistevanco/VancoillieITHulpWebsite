@@ -1,8 +1,8 @@
 <?php
 declare(strict_types=1);
 
-require_once __DIR__ . '/auth.php';      // levert sessie + csrf helpers
-require_once __DIR__ . '/../config.php'; // levert ADMIN_USER/ADMIN_PASS_HASH (zie toevoeging onderaan)
+require_once __DIR__ . '/auth.php';
+require_once __DIR__ . '/../config.php';
 
 if (session_status() !== PHP_SESSION_ACTIVE) session_start();
 
@@ -25,7 +25,6 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
 
     if ($okUser && $okPass) {
         $_SESSION['admin_logged_in'] = true;
-        // Optioneel: regenerate session id
         session_regenerate_id(true);
         header('Location: dashboard.php');
         exit;
@@ -40,20 +39,28 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
   <meta charset="utf-8">
   <title>News Admin • Login</title>
   <meta name="robots" content="noindex,nofollow,noarchive">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
     :root{color-scheme:light dark}
-    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;display:grid;place-items:center;min-height:100dvh;margin:0}
-    .card{width:min(420px,90vw);border:1px solid #e5e7eb;border-radius:12px;padding:24px}
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;display:grid;place-items:center;min-height:100dvh;margin:0;padding:16px}
+    .card{width:min(480px,92vw);border:1px solid #e5e7eb;border-radius:12px;padding:24px;background:Canvas}
     h1{margin:0 0 12px}
     label{display:block;margin:.75rem 0 .25rem;font-weight:600}
-    input{width:100%;padding:.7rem .9rem;border:1px solid #d1d5db;border-radius:10px}
+    input{width:100%;padding:.7rem .9rem;border:1px solid #d1d5db;border-radius:10px;font-size:16px}
     .row{display:flex;gap:.75rem;align-items:center;justify-content:space-between}
-    .btn{padding:.7rem 1rem;border:0;border-radius:10px;cursor:pointer}
-    .primary{background:#2563eb;color:#fff}
+    .btn{padding:.8rem 1rem;border:0;border-radius:10px;cursor:pointer}
+    .primary{background:#2563eb;color:#fff;width:100%;font-size:16px}
     .ghost{background:#f3f4f6}
     .err{color:#b91c1c;margin:.5rem 0 0}
     small{color:#6b7280}
     a{color:#2563eb;text-decoration:none}
+
+    /* Mobile polish */
+    @media (max-width: 640px){
+      .card{padding:20px}
+      .row{flex-direction:column;gap:10px}
+      .primary{width:100%}
+    }
   </style>
 </head>
 <body>
@@ -68,10 +75,10 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
       <label>Wachtwoord</label>
       <input type="password" name="password" required>
 
-      <div class="row" style="margin-top:12px">
+      <div class="row" style="margin-top:14px">
         <button class="btn primary" type="submit">Inloggen</button>
       </div>
-      <p style="margin-top:12px"><small>Tip: wijzig de admin-gegevens in <code>config.php</code>.</small></p>
+      <p style="margin-top:12px"><small>Tip: wijzig admin-gegevens in <code>config.php</code>.</small></p>
     </form>
   </div>
 </body>
