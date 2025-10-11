@@ -1,4 +1,10 @@
 <?php
+// Enable verbose errors when you append ?debug=1 to the URL
+if (isset($_GET['debug'])) {
+  ini_set('display_errors', '1');
+  ini_set('display_startup_errors', '1');
+  error_reporting(E_ALL);
+}
 require_once __DIR__.'/auth.php';
 require_once __DIR__.'/../config.php';
 
@@ -24,10 +30,17 @@ try {
   }
   $rows = $st->fetchAll(PDO::FETCH_ASSOC);
 } catch (Throwable $e) {
-  http_response_code(500);
+  if (!isset($_GET['debug'])) {
+    http_response_code(500);
+  }
   echo '<pre style="padding:16px;background:#fff3cd;color:#1f2937;border:1px solid #facc15;border-radius:8px;">';
-  echo "Dashboard kon niet laden.\n";
+  echo "Dashboard kon niet laden.\n\n";
   echo htmlspecialchars($e->getMessage());
+  echo "\n";
+  if (isset($_GET['debug'])) {
+    echo "\nStack trace:\n";
+    echo htmlspecialchars($e->getTraceAsString());
+  }
   echo "\n</pre>";
   exit;
 }
@@ -72,7 +85,7 @@ try {
         <tr>
           <td><?= (int)$r['id'] ?></td>
           <td><?= htmlspecialchars($r['title_nl'] ?: $r['title_en']) ?></td>
-          <td><?= htmlspecialchars($r['cat_nl'].' / '.$r['cat_en']) ?></td>
+          <td><?= htmlspecialchars(($r['cat_nl'] ?? '—'). ' / ' . ($r['cat_en'] ?? '—')) ?></td>
           <td><?= htmlspecialchars($r['date_published']) ?></td>
           <td>
             <?php if ($r['is_published']): ?>
