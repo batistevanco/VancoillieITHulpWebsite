@@ -8,37 +8,32 @@ if($_SERVER['REQUEST_METHOD']==='POST'){
     $id = (int)$_POST['delete'];
     $s = db()->prepare("DELETE FROM categories WHERE id=:id");
     $s->execute([':id'=>$id]);
+    header('Location: categories.php');
+    exit;
   }
   // Opslaan van wijzigingen
   elseif(isset($_POST['save'])){
-    if(!empty($_POST['id']) && is_array($_POST['id'])){
-      foreach($_POST['id'] as $i=>$id){
-        $s=db()->prepare("UPDATE categories SET name_nl=:nl, name_en=:en WHERE id=:id");
-        $s->execute([
-          ':nl'=>$_POST['name_nl'][$i] ?? '',
-          ':en'=>$_POST['name_en'][$i] ?? '',
-          ':id'=>$id
-        ]);
+    if(isset($_POST['name_nl'], $_POST['name_en']) && is_array($_POST['name_nl']) && is_array($_POST['name_en'])){
+      foreach($_POST['name_nl'] as $id => $nl){
+        $id = (int)$id;
+        $en = $_POST['name_en'][$id] ?? '';
+        $s = db()->prepare("UPDATE categories SET name_nl=:nl, name_en=:en WHERE id=:id");
+        $s->execute([':nl'=>$nl, ':en'=>$en, ':id'=>$id]);
       }
     }
-    // Indien in de onderste rij nieuwe waarden zijn ingevuld en je klikt op Opslaan, voeg dan ook toe
-    if(isset($_POST['name_nl'], $_POST['name_en'])){
-      $newNl = trim($_POST['name_nl']);
-      $newEn = trim($_POST['name_en']);
-      if($newNl !== '' && $newEn !== ''){
-        $s=db()->prepare("INSERT INTO categories(name_nl,name_en) VALUES(:nl,:en)");
-        $s->execute([':nl'=>$newNl, ':en'=>$newEn]);
-      }
-    }
+    header('Location: categories.php');
+    exit;
   }
   // Nieuwe categorie via de expliciete knop "add"
   elseif(isset($_POST['add'])){
-    $newNl = trim($_POST['name_nl'] ?? '');
-    $newEn = trim($_POST['name_en'] ?? '');
+    $newNl = trim($_POST['new_name_nl'] ?? '');
+    $newEn = trim($_POST['new_name_en'] ?? '');
     if($newNl !== '' && $newEn !== ''){
       $s=db()->prepare("INSERT INTO categories(name_nl,name_en) VALUES(:nl,:en)");
       $s->execute([':nl'=>$newNl, ':en'=>$newEn]);
     }
+    header('Location: categories.php');
+    exit;
   }
 }
 
@@ -57,9 +52,9 @@ $cats = db()->query("SELECT * FROM categories ORDER BY name_nl")->fetchAll(PDO::
 <tbody>
 <?php foreach($cats as $c): ?>
 <tr>
-  <td><input type="hidden" name="id[]" value="<?= (int)$c['id'] ?>"><?= (int)$c['id'] ?></td>
-  <td><input name="name_nl[]" value="<?= htmlspecialchars($c['name_nl']) ?>"></td>
-  <td><input name="name_en[]" value="<?= htmlspecialchars($c['name_en']) ?>"></td>
+  <td><?= (int)$c['id'] ?></td>
+  <td><input name="name_nl[<?= (int)$c['id'] ?>]" value="<?= htmlspecialchars($c['name_nl']) ?>"></td>
+  <td><input name="name_en[<?= (int)$c['id'] ?>]" value="<?= htmlspecialchars($c['name_en']) ?>"></td>
   <td>
     <button name="delete" value="<?= (int)$c['id'] ?>" onclick="return confirm('Verwijderen?')">Verwijderen</button>
   </td>
@@ -67,8 +62,8 @@ $cats = db()->query("SELECT * FROM categories ORDER BY name_nl")->fetchAll(PDO::
 <?php endforeach; ?>
 <tr>
   <td>+</td>
-  <td><input name="name_nl"></td>
-  <td><input name="name_en"></td>
+  <td><input name="new_name_nl"></td>
+  <td><input name="new_name_en"></td>
   <td></td>
 </tr>
 </tbody>
