@@ -52,6 +52,19 @@ try {
   echo "</pre>";
   exit;
 }
+function days_since_text(?string $datePublished, int $isPublished): string {
+  if ($isPublished !== 1 || empty($datePublished)) return '—';
+  try {
+    $start = new DateTime($datePublished);
+    $now   = new DateTime('now');
+    $days  = (int)$start->diff($now)->days;
+    if ($days === 0) return 'vandaag';
+    if ($days === 1) return '1 dag';
+    return $days . ' dagen';
+  } catch (Throwable $e) {
+    return '—';
+  }
+}
 ?>
 <!doctype html>
 <html lang="nl">
@@ -102,6 +115,7 @@ try {
         <th>Titel (NL)</th>
         <th>Categorie</th>
         <th>Datum</th>
+        <th>Online</th>
         <th>Status</th>
         <th>Link</th>
         <th>Acties</th>
@@ -114,6 +128,9 @@ try {
         <td data-label="Titel (NL)"><?= htmlspecialchars($r['title_nl'] ?: ($r['title_en'] ?? '—')) ?></td>
         <td data-label="Categorie"><?= htmlspecialchars(($r['cat_nl'] ?? '—') . ' / ' . ($r['cat_en'] ?? '—')) ?></td>
         <td data-label="Datum"><?= htmlspecialchars($r['date_published'] ?? '—') ?></td>
+        <td data-label="Online">
+          <?= htmlspecialchars(days_since_text($r['date_published'] ?? null, (int)($r['is_published'] ?? 0))) ?>
+        </td>
         <td data-label="Status">
           <?php if ((int)($r['is_published'] ?? 0) === 1): ?>
             <span class="pill pub">Gepubliceerd</span>
