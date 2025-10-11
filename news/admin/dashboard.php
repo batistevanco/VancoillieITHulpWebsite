@@ -1,24 +1,32 @@
 <?php
+declare(strict_types=1);
+
 // Enable verbose errors when you append ?debug=1 to the URL
 if (isset($_GET['debug'])) {
   ini_set('display_errors', '1');
   ini_set('display_startup_errors', '1');
   error_reporting(E_ALL);
 }
-require_once __DIR__.'/auth.php';
-require_once __DIR__.'/../config.php';
 
+// Auth guard (fallback if auth.php is missing)
+$__auth = __DIR__ . '/auth.php';
+if (file_exists($__auth)) {
+  require_once $__auth;
+} else {
+  if (session_status() !== PHP_SESSION_ACTIVE) session_start();
+  if (empty($_SESSION['admin_logged_in'])) {
+    header('Location: login.php');
+    exit;
+  }
+}
+
+require_once __DIR__ . '/../config.php';
 
 try {
   $sql = "
     SELECT a.id,
-           a.title_nl,
-           a.title_en,
-           a.is_published,
-           a.date_published,
-           a.full_url,
-           c.name_nl AS cat_nl,
-           c.name_en AS cat_en
+           a.title_nl, a.title_en, a.is_published, a.date_published, a.full_url,
+           c.name_nl AS cat_nl, c.name_en AS cat_en
     FROM articles a
     LEFT JOIN categories c ON c.id = a.category_id
     ORDER BY a.date_published DESC
@@ -26,7 +34,7 @@ try {
   $st = db()->query($sql);
   if ($st === false) {
     $ei = db()->errorInfo();
-    throw new RuntimeException('DB query failed: '.print_r($ei, true));
+    throw new RuntimeException('DB query failed: ' . print_r($ei, true));
   }
   $rows = $st->fetchAll(PDO::FETCH_ASSOC);
 } catch (Throwable $e) {
@@ -36,10 +44,8 @@ try {
   echo '<pre style="padding:16px;background:#fff3cd;color:#1f2937;border:1px solid #facc15;border-radius:8px;">';
   echo "Dashboard kon niet laden.\n\n";
   echo htmlspecialchars($e->getMessage());
-  echo "\n";
   if (isset($_GET['debug'])) {
-    echo "\nStack trace:\n";
-    echo htmlspecialchars($e->getTraceAsString());
+    echo "\n\nStack trace:\n" . htmlspecialchars($e->getTraceAsString());
   }
   echo "\n</pre>";
   exit;
@@ -49,24 +55,30 @@ try {
 <html lang="nl">
 <head>
   <meta charset="utf-8">
-  <title>Dashboard</title>
+  <title>News Admin • Dashboard</title>
   <meta name="robots" content="noindex,nofollow,noarchive">
-  <link rel="stylesheet" href="admin.css">
   <style>
-    body { font-family: system-ui,-apple-system,Segoe UI,Roboto; padding: 16px; }
-    table { width:100%; border-collapse: collapse; }
-    th, td { text-align:left; padding:10px; border-bottom:1px solid #eee; }
-    .pill { padding:2px 8px; border-radius:999px; font-size:12px; }
-    .pill.pub { background:#dcfce7; color:#166534; }
-    .pill.draft { background:#fee2e2; color:#991b1b; }
-    .actions a { margin-right:8px; }
-    .ext { text-decoration:none; }
+    :root{color-scheme:light dark}
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;margin:0;padding:16px}
+    header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+    .btn{display:inline-block;padding:.6rem .9rem;border-radius:10px;border:0;background:#2563eb;color:#fff;text-decoration:none}
+    .btn.ghost{background:#f3f4f6;color:#111}
+    table{width:100%;border-collapse:collapse}
+    th,td{padding:10px;border-bottom:1px solid #e5e7eb;text-align:left;vertical-align:top}
+    .pill{padding:2px 8px;border-radius:999px;font-size:12px}
+    .pill.pub{background:#dcfce7;color:#166534}
+    .pill.draft{background:#fee2e2;color:#991b1b}
+    form.inline{display:inline}
   </style>
 </head>
 <body>
-  <h1>Artikelen</h1>
-
-  <p><a href="edit.php" class="ext">+ Nieuw artikel</a></p>
+  <header>
+    <h1 style="margin:0">Artikelen</h1>
+    <nav>
+      <a class="btn ghost" href="categories.php">Categorieën</a>
+      <a class="btn" href="edit.php">+ Nieuw artikel</a>
+    </nav>
+  </header>
 
   <table>
     <thead>
@@ -75,49 +87,54 @@ try {
         <th>Titel (NL)</th>
         <th>Categorie</th>
         <th>Datum</th>
-        <th>Publicatie</th>
+        <th>Status</th>
         <th>Link</th>
         <th>Acties</th>
       </tr>
     </thead>
     <tbody>
-      <?php foreach($rows as $r): ?>
-        <tr>
-          <td><?= (int)$r['id'] ?></td>
-          <td><?= htmlspecialchars($r['title_nl'] ?: $r['title_en']) ?></td>
-          <td><?= htmlspecialchars(($r['cat_nl'] ?? '—'). ' / ' . ($r['cat_en'] ?? '—')) ?></td>
-          <td><?= htmlspecialchars($r['date_published']) ?></td>
-          <td>
-            <?php if ($r['is_published']): ?>
-              <span class="pill pub">Gepubliceerd</span>
-            <?php else: ?>
-              <span class="pill draft">Concept</span>
-            <?php endif; ?>
-          </td>
-          <td>
-            <?php if (!empty($r['full_url'])):
-              $url = trim($r['full_url']);
-              // relatieve → absolute
-              if ($url !== '' && !preg_match('~^https?://~i', $url)) {
-                $proto = (!empty($_SERVER['HTTPS']) ? 'https' : 'http').'://';
-                $base = $proto.$_SERVER['HTTP_HOST'].dirname(dirname($_SERVER['SCRIPT_NAME'])); // /news
-                $url = rtrim($base,'/').'/'.ltrim($url,'/');
-              }
-            ?>
-              <a class="ext" href="<?= htmlspecialchars($url) ?>" target="_blank" rel="noopener">
-                🔗 open
-              </a>
-            <?php else: ?>
-              —
-            <?php endif; ?>
-          </td>
-          <td class="actions">
-            <a href="edit.php?id=<?= (int)$r['id'] ?>">Bewerken</a>
-            <a href="delete.php?id=<?= (int)$r['id'] ?>" onclick="return confirm('Verwijderen?')">Verwijderen</a>
-          </td>
-        </tr>
-      <?php endforeach; ?>
+    <?php foreach ($rows as $r): ?>
+      <tr>
+        <td><?= (int)$r['id'] ?></td>
+        <td><?= htmlspecialchars($r['title_nl'] ?: $r['title_en']) ?></td>
+        <td><?= htmlspecialchars(($r['cat_nl'] ?? '—') . ' / ' . ($r['cat_en'] ?? '—')) ?></td>
+        <td><?= htmlspecialchars($r['date_published']) ?></td>
+        <td>
+          <?php if ((int)$r['is_published'] === 1): ?>
+            <span class="pill pub">Gepubliceerd</span>
+          <?php else: ?>
+            <span class="pill draft">Concept</span>
+          <?php endif; ?>
+        </td>
+        <td>
+          <?php if (!empty($r['full_url'])):
+            $url = trim((string)$r['full_url']);
+            if ($url !== '' && !preg_match('~^https?://~i', $url)) {
+              $proto = (!empty($_SERVER['HTTPS']) ? 'https' : 'http').'://';
+              $base  = $proto.$_SERVER['HTTP_HOST'].dirname(dirname($_SERVER['SCRIPT_NAME']));
+              $url   = rtrim($base,'/').'/'.ltrim($url,'/');
+            }
+          ?>
+            <a href="<?= htmlspecialchars($url) ?>" target="_blank" rel="noopener">🔗 open</a>
+          <?php else: ?>
+            —
+          <?php endif; ?>
+        </td>
+        <td>
+          <a class="btn ghost" href="edit.php?id=<?= (int)$r['id'] ?>">Bewerken</a>
+          <form class="inline" method="post" action="delete.php" onsubmit="return confirm('Verwijderen?')">
+            <?= csrf_field() ?>
+            <input type="hidden" name="id" value="<?= (int)$r['id'] ?>">
+            <button class="btn" type="submit" style="background:#ef4444">Verwijderen</button>
+          </form>
+        </td>
+      </tr>
+    <?php endforeach; ?>
     </tbody>
   </table>
+
+  <p style="margin-top:16px">
+    <a class="btn ghost" href="logout.php">Uitloggen</a>
+  </p>
 </body>
 </html>

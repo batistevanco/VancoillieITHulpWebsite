@@ -1,74 +1,99 @@
-<?php header('X-Robots-Tag: noindex, nofollow, noarchive', true);
-session_start(); if(empty($_SESSION['ok'])){ header('Location: login.php'); exit; }
+<?php
+declare(strict_types=1);
+require_once __DIR__.'/auth.php';
 require_once __DIR__.'/../config.php';
 
-if($_SERVER['REQUEST_METHOD']==='POST'){
-  // Verwijderen (heeft voorrang als een per-rij knop werd geklikt)
-  if(isset($_POST['delete'])){
-    $id = (int)$_POST['delete'];
-    $s = db()->prepare("DELETE FROM categories WHERE id=:id");
-    $s->execute([':id'=>$id]);
-    header('Location: categories.php');
-    exit;
-  }
-  // Opslaan van wijzigingen
-  elseif(isset($_POST['save'])){
-    if(isset($_POST['name_nl'], $_POST['name_en']) && is_array($_POST['name_nl']) && is_array($_POST['name_en'])){
-      foreach($_POST['name_nl'] as $id => $nl){
-        $id = (int)$id;
-        $en = $_POST['name_en'][$id] ?? '';
-        $s = db()->prepare("UPDATE categories SET name_nl=:nl, name_en=:en WHERE id=:id");
-        $s->execute([':nl'=>$nl, ':en'=>$en, ':id'=>$id]);
+if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
+  csrf_validate();
+
+  if (isset($_POST['save'])) {
+    // update bestaande
+    $ids = $_POST['id'] ?? [];
+    $nl  = $_POST['name_nl'] ?? [];
+    $en  = $_POST['name_en'] ?? [];
+    foreach ($ids as $i => $id) {
+      $id = (int)$id;
+      $nln = trim($nl[$i] ?? '');
+      $enn = trim($en[$i] ?? '');
+      if ($id > 0) {
+        $st = db()->prepare("UPDATE categories SET name_nl=:nl, name_en=:en WHERE id=:id");
+        $st->execute([':nl'=>$nln, ':en'=>$enn, ':id'=>$id]);
       }
     }
-    header('Location: categories.php');
-    exit;
-  }
-  // Nieuwe categorie via de expliciete knop "add"
-  elseif(isset($_POST['add'])){
-    $newNl = trim($_POST['new_name_nl'] ?? '');
-    $newEn = trim($_POST['new_name_en'] ?? '');
-    if($newNl !== '' && $newEn !== ''){
-      $s=db()->prepare("INSERT INTO categories(name_nl,name_en) VALUES(:nl,:en)");
-      $s->execute([':nl'=>$newNl, ':en'=>$newEn]);
+    // nieuwe
+    $new_nl = trim($_POST['new_name_nl'] ?? '');
+    $new_en = trim($_POST['new_name_en'] ?? '');
+    if ($new_nl !== '' || $new_en !== '') {
+      $st = db()->prepare("INSERT INTO categories (name_nl, name_en) VALUES (:nl,:en)");
+      $st->execute([':nl'=>$new_nl, ':en'=>$new_en]);
     }
-    header('Location: categories.php');
-    exit;
   }
+
+  if (isset($_POST['delete'])) {
+    $id = (int)($_POST['id'] ?? 0);
+    if ($id > 0) {
+      $st = db()->prepare("DELETE FROM categories WHERE id=:id");
+      $st->execute([':id'=>$id]);
+    }
+  }
+
+  header('Location: categories.php');
+  exit;
 }
 
-$cats = db()->query("SELECT * FROM categories ORDER BY name_nl")->fetchAll(PDO::FETCH_ASSOC);
+$rows = db()->query("SELECT id, name_nl, name_en FROM categories ORDER BY name_nl")->fetchAll(PDO::FETCH_ASSOC);
 ?>
-<!doctype html><html lang="nl"><meta charset="utf-8">
-<title>Categorieën</title>
-<link rel="stylesheet" href="admin.css">
-<meta name="robots" content="noindex, nofollow, noarchive">
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8">
+  <title>Categorieën</title>
+  <meta name="robots" content="noindex,nofollow,noarchive">
+  <style>
+    :root{color-scheme:light dark}
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;margin:0;padding:16px}
+    table{width:100%;border-collapse:collapse}
+    th,td{padding:10px;border-bottom:1px solid #e5e7eb;text-align:left}
+    input{width:100%;padding:.5rem .7rem;border:1px solid #d1d5db;border-radius:8px}
+    .row{display:flex;gap:12px}
+    .btn{padding:.6rem .9rem;border-radius:8px;border:0;background:#2563eb;color:#fff;cursor:pointer}
+    .ghost{background:#f3f4f6;color:#111}
+  </style>
+</head>
 <body>
-<header><h1>Categorieën</h1><nav><a href="dashboard.php">Terug</a></nav></header>
+  <h1>Categorieën</h1>
 
-<form method="post">
-<table>
-<thead><tr><th>ID</th><th>NL</th><th>EN</th><th>Acties</th></tr></thead>
-<tbody>
-<?php foreach($cats as $c): ?>
-<tr>
-  <td><?= (int)$c['id'] ?></td>
-  <td><input name="name_nl[<?= (int)$c['id'] ?>]" value="<?= htmlspecialchars($c['name_nl']) ?>"></td>
-  <td><input name="name_en[<?= (int)$c['id'] ?>]" value="<?= htmlspecialchars($c['name_en']) ?>"></td>
-  <td>
-    <button name="delete" value="<?= (int)$c['id'] ?>" onclick="return confirm('Verwijderen?')">Verwijderen</button>
-  </td>
-</tr>
-<?php endforeach; ?>
-<tr>
-  <td>+</td>
-  <td><input name="new_name_nl"></td>
-  <td><input name="new_name_en"></td>
-  <td></td>
-</tr>
-</tbody>
-</table>
-<button name="save">Wijzigingen opslaan</button>
-<button name="add">Nieuwe categorie toevoegen</button>
-</form>
-</body></html>
+  <form method="post">
+    <?= csrf_field() ?>
+    <table>
+      <thead>
+        <tr><th>ID</th><th>NL</th><th>EN</th><th>Acties</th></tr>
+      </thead>
+      <tbody>
+        <?php foreach ($rows as $r): ?>
+          <tr>
+            <td><input type="text" value="<?= (int)$r['id'] ?>" readonly style="width:60px"></td>
+            <td><input type="text" name="name_nl[]" value="<?= htmlspecialchars($r['name_nl']) ?>"></td>
+            <td><input type="text" name="name_en[]" value="<?= htmlspecialchars($r['name_en']) ?>"></td>
+            <td class="row">
+              <input type="hidden" name="id[]" value="<?= (int)$r['id'] ?>">
+              <button class="btn ghost" name="delete" value="1" formaction="categories.php" formmethod="post" onclick="return confirm('Verwijderen?')">Verwijderen</button>
+            </td>
+          </tr>
+        <?php endforeach; ?>
+        <tr>
+          <td>+</td>
+          <td><input type="text" name="new_name_nl" placeholder="Nieuwe NL.."></td>
+          <td><input type="text" name="new_name_en" placeholder="Nieuwe EN.."></td>
+          <td></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div style="margin-top:12px" class="row">
+      <button class="btn" type="submit" name="save" value="1">Opslaan</button>
+      <a class="btn ghost" href="dashboard.php">Terug</a>
+    </div>
+  </form>
+</body>
+</html>

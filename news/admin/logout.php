@@ -1,1 +1,7 @@
-<?php header('X-Robots-Tag: noindex, nofollow, noarchive', true); session_start(); session_destroy(); header('Location: login.php'); 
+<?php
+declare(strict_types=1);
+if (session_status() !== PHP_SESSION_ACTIVE) session_start();
+$_SESSION = [];
+session_destroy();
+header('Location: login.php');
+exit;
