@@ -1,11 +1,7 @@
-
-
-<?php
+<?php declare(strict_types=1);
 // Simple admin auth + CSRF helpers
 // Include this at the top of every admin page (dashboard.php, edit.php, categories.php, delete.php ...)
 // If the current script is not login.php, the user must be logged in.
-
-declare(strict_types=1);
 
 // Start session once
 if (session_status() !== PHP_SESSION_ACTIVE) {
