@@ -3,14 +3,34 @@ require_once __DIR__.'/auth.php';
 require_once __DIR__.'/../config.php';
 
 
-$st = db()->query("
-  SELECT a.id, a.title_nl, a.title_en, a.is_published, a.date_published, a.full_url,
-         c.name_nl AS cat_nl, c.name_en AS cat_en
-  FROM articles a
-  JOIN categories c ON c.id=a.category_id
-  ORDER BY a.date_published DESC
-");
-$rows = $st->fetchAll(PDO::FETCH_ASSOC);
+try {
+  $sql = "
+    SELECT a.id,
+           a.title_nl,
+           a.title_en,
+           a.is_published,
+           a.date_published,
+           a.full_url,
+           c.name_nl AS cat_nl,
+           c.name_en AS cat_en
+    FROM articles a
+    LEFT JOIN categories c ON c.id = a.category_id
+    ORDER BY a.date_published DESC
+  ";
+  $st = db()->query($sql);
+  if ($st === false) {
+    $ei = db()->errorInfo();
+    throw new RuntimeException('DB query failed: '.print_r($ei, true));
+  }
+  $rows = $st->fetchAll(PDO::FETCH_ASSOC);
+} catch (Throwable $e) {
+  http_response_code(500);
+  echo '<pre style="padding:16px;background:#fff3cd;color:#1f2937;border:1px solid #facc15;border-radius:8px;">';
+  echo "Dashboard kon niet laden.\n";
+  echo htmlspecialchars($e->getMessage());
+  echo "\n</pre>";
+  exit;
+}
 ?>
 <!doctype html>
 <html lang="nl">
