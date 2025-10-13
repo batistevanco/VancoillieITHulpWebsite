@@ -54,13 +54,31 @@ try {
 }
 function days_since_text(?string $datePublished, int $isPublished): string {
   if ($isPublished !== 1 || empty($datePublished)) return '—';
+
   try {
-    $start = new DateTime($datePublished);
-    $now   = new DateTime('now');
-    $days  = (int)$start->diff($now)->days;
-    if ($days === 0) return 'vandaag';
-    if ($days === 1) return '1 dag';
-    return $days . ' dagen';
+    // Vergelijk op kalenderdag in vaste tijdzone om “vandaag/gisteren” correct te tonen,
+    // ongeacht DST/offsets. Ga ervan uit dat date_published in UTC is opgeslagen.
+    $appTz = new DateTimeZone('Europe/Brussels');
+    $srcTz = new DateTimeZone('UTC'); // Pas dit aan indien je DB lokaal tijd bewaart.
+
+    // Parse de publicatiedatum en converteer naar app-tijdzone
+    $published = (new DateTimeImmutable($datePublished, $srcTz))->setTimezone($appTz);
+    $now       = new DateTimeImmutable('now', $appTz);
+
+    // Vergelijk op kalenderdag
+    $pubDay = $published->format('Y-m-d');
+    $nowDay = $now->format('Y-m-d');
+
+    if ($pubDay === $nowDay) {
+      return 'vandaag';
+    }
+    if ($pubDay === $now->modify('-1 day')->format('Y-m-d')) {
+      return 'gisteren';
+    }
+
+    // Val terug op aantal dagen verschil voor alles ouder dan gisteren
+    $days = (int)$published->diff($now)->days;
+    return ($days === 1) ? '1 dag' : $days . ' dagen';
   } catch (Throwable $e) {
     return '—';
   }
